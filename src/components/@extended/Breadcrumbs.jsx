@@ -43,7 +43,7 @@ export default function Breadcrumbs({ navigation, title, ...others }) {
 
   // only used for component demo breadcrumbs
   if (location.pathname === '/breadcrumbs') {
-    location.pathname = '/dashboard/analytics';
+    location.pathname = '/weighing/analytics';
   }
 
   let mainContent;
@@ -83,11 +83,11 @@ export default function Breadcrumbs({ navigation, title, ...others }) {
                 {itemContent}
               </MuiBreadcrumbs>
             </Grid>
-            {title && (
+            {/* {title && (
               <Grid item sx={{ mt: 2 }}>
                 <Typography variant="h5">{item.title}</Typography>
               </Grid>
-            )}
+            )} */}
           </Grid>
         </MainCard>
       );

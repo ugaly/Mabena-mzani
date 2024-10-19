@@ -10,26 +10,25 @@ const icons = {
 // ==============================|| MENU ITEMS - SAMPLE PAGE & DOCUMENTATION ||============================== //
 
 const support = {
-  id: 'support',
-  title: 'Support',
+  id: 'Setup',
+  title: 'Setup',
   type: 'group',
   children: [
     {
-      id: 'sample-page',
-      title: 'Sample Page',
+      id: 'axel-group',
+      title: 'Axel Group',
       type: 'item',
-      url: '/weighing/sample-page',
+      url: '/weighing/axel-group',
       icon: icons.ChromeOutlined
     },
     {
-      id: 'documentation',
-      title: 'Documentation',
-      type: 'item',
-      url: 'https://codedthemes.gitbook.io/mantis/',
-      icon: icons.QuestionOutlined,
-      external: true,
-      target: true
+        id: 'vehicle-type',
+        title: 'Vehicle Type',
+        type: 'item',
+        url: '/weighing/vehicle-type',
+        icon: icons.ChromeOutlined
     }
+   
   ]
 };
 

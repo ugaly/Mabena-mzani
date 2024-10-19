@@ -29,21 +29,21 @@ const utilities = {
       id: 'util-typography',
       title: 'Typography',
       type: 'item',
-      url: '/typography',
+      url: '/weighing/typography',
       icon: icons.FontSizeOutlined
     },
     {
       id: 'util-color',
       title: 'Color',
       type: 'item',
-      url: '/color',
+      url: '/weighing/color',
       icon: icons.BgColorsOutlined
     },
     {
       id: 'util-shadow',
       title: 'Shadow',
       type: 'item',
-      url: '/shadow',
+      url: '/weighing/shadow',
       icon: icons.BarcodeOutlined
     }
   ]
