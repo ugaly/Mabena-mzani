@@ -17,12 +17,12 @@ export default function VehicleType() {
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [newType, setNewType] = useState('');
-    const [newOrderNo, setNewOrderNo] = useState('');
+    const [weightLimit, setWeightLimit] = useState('');
     const [selectedAxelGroup, setSelectedAxelGroup] = useState([]); // Array for selected axel groups
     const [newPrice, setNewPrice] = useState('');
     const [axelGroupOptions, setAxelGroupOptions] = useState([]); // State for fetched axel groups
     const [selectedOptions, setSelectedOptions] = useState([]);
-    const [vehicleType, setVehicleType] = useState([]);
+
 
     const columns = [
         { field: 'id', header: 'S/No' },
@@ -87,12 +87,10 @@ export default function VehicleType() {
 
     const handleAddVehicleType = async () => {
         const newVehicleType = {
-            // id: vehicleTypes.length + 1,
             type: newType,
-            // orderNo: Number(newOrderNo),
-            // axelGroup: new Set([selectedAxelGroup]), // Use selected axel group
+            weightLimit:weightLimit,
             price: Number(newPrice),
-            'axelGroup': selectedOptions.map(option => option.value)
+            axelGroup: selectedOptions.map(option => option.value)
         };
 
         console.log(newVehicleType);
@@ -101,7 +99,7 @@ export default function VehicleType() {
             await AuthService.setVehicleType(newVehicleType);
             // setVehicleTypes([...vehicleTypes, newVehicleType]);
             setNewType('');
-            setNewOrderNo('');
+            setWeightLimit(0);
             setSelectedAxelGroup(null);
             setNewPrice('');
             setSelectedOptions([]);
@@ -267,6 +265,18 @@ export default function VehicleType() {
 
 
                     <div className="flex flex-column mb-3 mt-3">
+                        <label htmlFor="price" className="font-semibold">Weight Limit</label>
+                        <InputText
+                            id="price"
+                            value={newPrice}
+                            onChange={(e) => setWeightLimit(e.target.value)}
+                            placeholder="Enter Weight Limit"
+                            type="number"
+                            style={{ width: '100%', height: '50px' }}
+                        />
+                    </div>
+
+                    <div className="flex flex-column mb-3 mt-3">
                         <label htmlFor="price" className="font-semibold">Price</label>
                         <InputText
                             id="price"
@@ -277,6 +287,7 @@ export default function VehicleType() {
                             style={{ width: '100%', height: '50px' }}
                         />
                     </div>
+
                     <div className="flex justify-content-center">
                         <Button
                             label="Submit"

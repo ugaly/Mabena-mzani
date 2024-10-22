@@ -732,7 +732,7 @@ export default function Vehicles() {
                     <Column field="gvmAxelWeight" header="GVM Axel Weight" />
                     <Column field="gvmWeightLimit" header="GVM Weight Limit" />
                     <Column field="gvmWeightStatus" header="Status" />
-                    <Column field="gvmOverload" header="GVN Overload" />
+                    <Column field="gvmOverload" header="GVM Overload" />
                     <Column field="gvmAllowance" header="GVM Allowance" />
                     <Column header="Action" body={actionBodyTemplate} />
 
