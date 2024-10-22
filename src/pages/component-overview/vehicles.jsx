@@ -17,6 +17,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { setPowersetDependencies } from 'mathjs';
 import SalesService from 'services/SalesService';
 import { Tag } from 'primereact/tag';
+import { ProgressBar } from 'primereact/progressbar';
 
 export default function Vehicles() {
 
@@ -140,7 +141,8 @@ export default function Vehicles() {
                     onChange={onGlobalFilterChange}
                     placeholder="Keyword Search"
                 />
-                <Button type="button" icon="pi pi-plus" label="New Weigh" outlined onClick={() => {
+                <div>
+                <Button style={{marginRight:'4px'}} type="button" icon="pi pi-plus" label="New Weigh" outlined onClick={() => {
                     setParentId(0)
                     setIsAdding(true)
                     setTableValue([])
@@ -148,6 +150,18 @@ export default function Vehicles() {
                     setTruckNumber('')
                     
                 }} />
+
+                <Button type="button" icon="pi pi-receipt" label="Sales Report" outlined onClick={() => {
+                    setParentId(0)
+                    setIsAdding(true)
+                    setTableValue([])
+                    setSelectedVehicleType(0)
+                    setTruckNumber('')
+                    
+                }} />
+                </div>
+
+                
             </div>
         );
     };
@@ -490,12 +504,12 @@ export default function Vehicles() {
         
 
 
-        const regex = /^T\d{3}[A-Z]{3}$/;
+        {/*const regex = /^T\d{3}[A-Z]{3}$/;
         if (!regex.test(truckNumber)) {
             alert('Please enter a valid Truck Number.');
             document.getElementById('trckNo').focus();
             return;
-        }
+        }*/}
 
         let data =[]
 
@@ -677,11 +691,14 @@ export default function Vehicles() {
                                 
                             </DataTable>
 
+                            {loading?<ProgressBar mode="indeterminate" />:''}
+
 
                             <div className="flex justify-content-end" style={{marginTop:'30px'}}>
                                 
                                 <span style={{margin:'10px 20px',fontWeight:'bold'}}>Price : {salePrice}</span>
-                                <Button type="button" style={{width: '100px',marginRight:'10px'}} icon="pi pi-save" label="Save"  onClick={() => saveSales()} />
+                                {loading?'Please Wait...':<Button type="button" style={{width: '100px',marginRight:'10px'}} icon="pi pi-save" label="Save"  onClick={() => saveSales()} />}
+                                
                                 
                                 <Button type="button" style={{width: '100px'}} icon="pi pi-times" label="Cancel" outlined onClick={cancelAdd} />
                             </div>
