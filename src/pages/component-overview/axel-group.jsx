@@ -15,7 +15,7 @@ export default function AxelGroup() {
     const [isAdding, setIsAdding] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDescription, setNewDescription] = useState('');
-    const [newWeightLimit, setNewWeightLimit] = useState('');
+    const [allowed, setAllowed] = useState('');
 
     useEffect(() => {
         fetchAxelGroups();
@@ -59,7 +59,7 @@ export default function AxelGroup() {
         const newCustomer = {
             groupName: newName,
             description: newDescription,
-            weightLimit: Number(newWeightLimit),
+            allowed: Number(allowed),
         };
         
         try {
@@ -68,7 +68,7 @@ export default function AxelGroup() {
               console.log(res.data);
               setNewName('');
               setNewDescription('');
-              setNewWeightLimit('');
+              setAllowed('');
               setIsAdding(false);
               fetchAxelGroups(); // Optionally refetch to ensure data is in sync
             })
@@ -147,12 +147,12 @@ export default function AxelGroup() {
                         />
                     </div>
                     <div className="flex flex-column mb-3">
-                        <label htmlFor="weightLimit" className="font-semibold">Weight Limit</label>
+                        <label htmlFor="weightLimit" className="font-semibold">Allowed Weight</label>
                         <InputText 
-                            id="weightLimit"
-                            value={newWeightLimit} 
-                            onChange={(e) => setNewWeightLimit(e.target.value)} 
-                            placeholder="Enter weight limit" 
+                            id="allowed"
+                            value={allowed} 
+                            onChange={(e) => setAllowed(e.target.value)} 
+                            placeholder="Enter allowed weight" 
                             type="number" 
                             style={{ width: '100%', height: '50px' }}
                         />
@@ -191,6 +191,7 @@ export default function AxelGroup() {
                     <Column field="id" header="S/N" />
                     <Column field="groupName" header="Name" filter filterPlaceholder="Search by name" />
                     <Column field="description" header="Description" />
+                    <Column field="allowed" header="Allowed" />
                     <Column field="weightLimit" header="Weight Limit" />
                     <Column header="Action" body={actionBodyTemplate} />
                 </DataTable>

@@ -134,7 +134,7 @@ export default function Profile() {
                       <Grid item>
                         <Tooltip title="Logout" onClick={()=>{
                           localStorage.clear();
-                          window.location='/mizani';
+                          window.location='/';
                         }}>
                           <IconButton size="large" sx={{ color: 'text.primary' }}>
                             <LogoutOutlined />

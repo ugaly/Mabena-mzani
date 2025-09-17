@@ -8,16 +8,20 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { Autocomplete, TextField, Chip, Avatar } from '@mui/material';
 
 import { Dropdown } from 'primereact/dropdown';
+import { Toast } from 'primereact/toast';
 import AuthService from 'services/AuthService'; // Assuming this is your API service
 
 export default function VehicleType() {
+
+    const toast = useRef(null);
+
     const [vehicleTypes, setVehicleTypes] = useState([]);
     const [filters, setFilters] = useState(null);
     const [loading, setLoading] = useState(false);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [newType, setNewType] = useState('');
-    const [weightLimit, setWeightLimit] = useState('');
+    //const [weightLimit, setWeightLimit] = useState('');
     const [selectedAxelGroup, setSelectedAxelGroup] = useState([]); // Array for selected axel groups
     const [newPrice, setNewPrice] = useState('');
     const [axelGroupOptions, setAxelGroupOptions] = useState([]); // State for fetched axel groups
@@ -44,7 +48,7 @@ export default function VehicleType() {
         try {
             const response = await AuthService.getAxelGroup();
             const axelGroups = response.data.results.map(group => ({
-                label: group.groupName, // Assuming `groupName` is the name field from API response
+                label: group.groupName+' - '+group.description, // Assuming `groupName` is the name field from API response
                 value: group.id
             }));
             setAxelGroupOptions(axelGroups);
@@ -86,11 +90,31 @@ export default function VehicleType() {
     };
 
     const handleAddVehicleType = async () => {
+
+        if(newType===''){
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'No Vehicle Type', life: 2000 });
+            return
+        }
+
+        let groups = selectedOptions.map(option => option.value)
+
+
+        if(groups.length<2){
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Invalid Axel Groups', life: 2000 });
+            return
+        }
+        
+        if(newPrice===''){
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'No Weighting Price', life: 2000 });
+            return
+        }
+
+        
         const newVehicleType = {
             type: newType,
-            weightLimit:weightLimit,
+            //weightLimit:weightLimit,
             price: Number(newPrice),
-            axelGroup: selectedOptions.map(option => option.value)
+            axelGroup: groups
         };
 
         console.log(newVehicleType);
@@ -99,7 +123,7 @@ export default function VehicleType() {
             await AuthService.setVehicleType(newVehicleType);
             // setVehicleTypes([...vehicleTypes, newVehicleType]);
             setNewType('');
-            setWeightLimit(0);
+            //setWeightLimit(0);
             setSelectedAxelGroup(null);
             setNewPrice('');
             setSelectedOptions([]);
@@ -187,18 +211,6 @@ export default function VehicleType() {
                             style={{ width: '100%', height: '50px' }}
                         />
                     </div>
-                    {/* <div className="flex flex-column mb-3">
-                        <label htmlFor="orderNo" className="font-semibold">Order Number</label>
-                        <InputText
-                            id="orderNo"
-                            value={newOrderNo}
-                            onChange={(e) => setNewOrderNo(e.target.value)}
-                            placeholder="Enter order number"
-                            type="number"
-                            style={{ width: '100%', height: '50px' }}
-                        />
-                    </div> */}
-
 
                     <div className="col-span-full">
                         <Autocomplete
@@ -261,23 +273,20 @@ export default function VehicleType() {
 
 
 
-
-
-
-                    <div className="flex flex-column mb-3 mt-3">
+                    {/* <div className="flex flex-column mb-3 mt-3">
                         <label htmlFor="price" className="font-semibold">Weight Limit</label>
                         <InputText
-                            id="price"
-                            value={newPrice}
+                            id="weightLimit"
+                            value={weightLimit}
                             onChange={(e) => setWeightLimit(e.target.value)}
                             placeholder="Enter Weight Limit"
                             type="number"
                             style={{ width: '100%', height: '50px' }}
                         />
-                    </div>
+                    </div> */}
 
                     <div className="flex flex-column mb-3 mt-3">
-                        <label htmlFor="price" className="font-semibold">Price</label>
+                        <label htmlFor="price" className="font-semibold">Weighting Price</label>
                         <InputText
                             id="price"
                             value={newPrice}
@@ -304,29 +313,7 @@ export default function VehicleType() {
                     </div>
                 </div>
             ) : (
-                // <DataTable
-                //     value={vehicleTypes}
-                //     showGridlines
-                //     paginator
-                //     rows={10}
-                //     loading={loading}
-                //     dataKey="id"
-                //     filters={filters}
-                //     globalFilterFields={['type']}
-                //     header={renderHeader()}
-                //     emptyMessage="No vehicle types found."
-                //     className="shadow-2"
-                //     onFilter={(e) => setFilters(e.filters)}
-                // >
-                //     <Column field="id" header="S/N" />
-                //     <Column field="type" header="Type" />
-                //     <Column
-                //         header="Axels"
-                //         body={(rowData) => getAxelNames(axels)} // Use the axels variable
-                //     />
-                //     <Column field="price" header="Price" />
-                //     <Column header="Action" body={actionBodyTemplate} />
-                // </DataTable>
+               
 
 
 
@@ -363,6 +350,10 @@ export default function VehicleType() {
 
 
             )}
+
+
+<Toast ref={toast} />
+
         </div>
     );
 }

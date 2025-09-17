@@ -18,6 +18,7 @@ import { setPowersetDependencies } from 'mathjs';
 import SalesService from 'services/SalesService';
 import { Tag } from 'primereact/tag';
 import { ProgressBar } from 'primereact/progressbar';
+import { Toast } from 'primereact/toast';
 
 export default function Vehicles() {
 
@@ -38,6 +39,8 @@ export default function Vehicles() {
     const [pdfDataUrl, setPdfDataUrl] = useState('');
     const [printDialogTitle, setPrintDialogTitle] = useState('');
     const [parentId, setParentId] = useState(0);
+    const toast = useRef(null);
+    const [previosData, setPreviousData] = useState([]);
 
 
 
@@ -115,7 +118,7 @@ export default function Vehicles() {
             const response = await AuthService.getAxelGroup();
             setLoading(false);
             const axels = response.data.results.map(axel => ({ 
-                label: axel.groupName, 
+                label: axel.groupName+' - '+axel.description, 
                 value: axel.id 
             }));
 
@@ -142,7 +145,7 @@ export default function Vehicles() {
                     placeholder="Keyword Search"
                 />
                 <div>
-                <Button style={{marginRight:'4px'}} type="button" icon="pi pi-plus" label="New Weigh" outlined onClick={() => {
+                <Button style={{marginRight:'1px'}} type="button" icon="pi pi-plus" label="New Weigh" outlined onClick={() => {
                     setParentId(0)
                     setIsAdding(true)
                     setTableValue([])
@@ -151,14 +154,14 @@ export default function Vehicles() {
                     
                 }} />
 
-                <Button type="button" icon="pi pi-receipt" label="Sales Report" outlined onClick={() => {
+                {/* <Button type="button" icon="pi pi-receipt" label="Sales Report" outlined onClick={() => {
                     setParentId(0)
                     setIsAdding(true)
                     setTableValue([])
                     setSelectedVehicleType(0)
                     setTruckNumber('')
                     
-                }} />
+                }} /> */}
                 </div>
 
                 
@@ -198,9 +201,10 @@ export default function Vehicles() {
             console.log('Repeat:', rowData);
             setParentId(rowData.id);
             setTruckNumber(rowData.truckNumber);
+            setPreviousData(rowData)
             //selectedVehicleType(rowData.vehicleType);
 
-            handleVehicleTypeChange(rowData.vehicleTypeId)
+            handleVehicleTypeChange(rowData)
             setIsAdding(true)
         };
         const handlePrint = async () => {
@@ -230,25 +234,10 @@ export default function Vehicles() {
                 pdfWindow.print();
             };
             }
-
-
-
-            //setPrintDialogTitle(rowData.vehicleType+' - '+rowData.truckNumber)
-            //setPdfDataUrl(receipt.data.file)
-            //setPdfVisible(true)
         };
 
         return (
-            // <div className="flex justify-content-center">
-            //     <Button icon="pi pi-ellipsis-v" onClick={handleOverlayClick} className="p-button-text" />
-            //     <OverlayPanel ref={overlayRef} showCloseIcon onHide={() => overlayRef.current.hide()}>
-            //         <div className="flex flex-column">
-                
-            //             <Button icon="pi pi-pencil" label="Edit" className="p-button-text" onClick={handleEdit} />
-            //             <Button icon="pi pi-trash" label="Delete" className="p-button-text" onClick={handleDelete} />
-            //         </div>
-            //     </OverlayPanel>
-            // </div>
+           
 
             <div className="flex justify-content-center">
                 <div className="flex flex-row">
@@ -266,19 +255,44 @@ export default function Vehicles() {
        
         setTableValue([]);
         
+        setSelectedVehicleType(value.vehicleTypeId);
+
+        console.log('Selected vehicle type:', value);
+
+        vehicleTypeslist.forEach((type) => {
+            if (type.id === value.vehicleTypeId) {
+                setSalePrice(type.price);
+            }
+        })
+        
+        setLoading(true);
+        AuthService.getAxelsByVehicleId(value.vehicleTypeId,value.id).then((response) => {
+            setLoading(false);
+            setTableValue(response.data.results);
+        })
+    };
+
+    const handleVehicleTypeChangeNew = (value) => {
+       
+        setTableValue([]);
+        
         setSelectedVehicleType(value);
+
+        console.log('Selected vehicle type:', value);
 
         vehicleTypeslist.forEach((type) => {
             if (type.id === value) {
                 setSalePrice(type.price);
             }
         })
+        
         setLoading(true);
-        AuthService.getAxelsByVehicleId(value,parentId).then((response) => {
+        AuthService.getAxelsByVehicleId(value,0).then((response) => {
             setLoading(false);
             setTableValue(response.data.results);
         })
     };
+    
 
 
 
@@ -326,20 +340,21 @@ export default function Vehicles() {
         setTableValue(updatedData);
     };
 
-    
-
     const setFromAxelGroup = (value,options) => {
-
         //console.log(value)
         options.editorCallback(value);
         
         let groupName = ''
         let weightLimit = 0
+        let description = ''
+        let allowed = 0
 
         vehicleAxelsList.forEach((axel) => {
             if (axel.id === value) {
                 groupName = axel.groupName
                 weightLimit = axel.weightLimit
+                description = axel.description
+                allowed = axel.allowed
             }
         })
 
@@ -349,6 +364,7 @@ export default function Vehicles() {
         //updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], axelWeight: '' };
 
         let axelWeight = updatedTableValues[options.rowIndex].axelWeight
+        
         let status = 'Not Overload'
         let overload = 0
         let allowance = weightLimit
@@ -367,11 +383,11 @@ export default function Vehicles() {
 
 
         updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], overload: overload };
+        updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], description: description };
+        updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], allowed: allowed };
         updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], allowance: allowance };
         updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], status: status };
         updatedTableValues[options.rowIndex] = { ...updatedTableValues[options.rowIndex], weightLimit: weightLimit };
-
-
 
 
         setTableValue(updatedTableValues);
@@ -420,16 +436,22 @@ export default function Vehicles() {
     }
     
     
+
+
     const updateGVM = (updatedTableValues) => {
         let gvmRow = updatedTableValues.length -1
         let gvmAxelWeight = 0;
+        let gvmAllowed = 0;
         
-
+        //let gvmWeightLimit=0
         updatedTableValues.forEach((row, index) => {
             if(index < gvmRow){
                 if(row.axelWeight!==''){
                     gvmAxelWeight+=parseInt(row.axelWeight)
+                    gvmAllowed+=parseInt(row.allowed)
                 }
+            }else{
+                //gvmWeightLimit = row.weightLimit
             }
         })
 
@@ -437,6 +459,7 @@ export default function Vehicles() {
         let gvmOverload = 0
         let gvmAllowance = 0
         let gvmStatus = 'Not Overload'
+        //let allowed = 0
 
 
         let gvmWeightLimit=0;
@@ -444,29 +467,39 @@ export default function Vehicles() {
             if(index < gvmRow){
                 console.log(row)
                 if(row.weightLimit!==''){
-                    gvmWeightLimit+=parseInt(row.weightLimit)
+                    
+                    //allowed = roundToThousands(parseInt(row.weightLimit))
+
+                    //updatedTableValues[index] = { ...updatedTableValues[index], allowed: allowed };
+                    
+                    gvmWeightLimit+=parseInt(row.allowed)
                     gvmOverload+=parseInt(row.overload)
                     gvmAllowance+=parseInt(row.allowance)
+
                 }
             }
         })
 
-
+        if(gvmWeightLimit>56000){
+            gvmWeightLimit = 56000
+        }
 
 
         if(gvmWeightLimit<gvmAxelWeight){
-            //gvmOverload = gvmAxelWeight - gvmWeightLimit
-            //gvmAllowance = 0
+            gvmOverload = gvmAxelWeight - gvmWeightLimit
+            gvmAllowance = 0
             gvmStatus = 'Overload'
         }
 
         if(gvmWeightLimit>gvmAxelWeight){
-            //gvmAllowance = gvmWeightLimit - gvmAxelWeight
-            //gvmOverload = 0
+            gvmOverload = 0
+            gvmAllowance = gvmWeightLimit - gvmAxelWeight
             gvmStatus = 'Not Overload'
         }
 
         updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], axelWeight: gvmAxelWeight };
+        updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], allowed: gvmAllowed };
+        updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], allowed: gvmWeightLimit };
         updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], weightLimit: gvmWeightLimit };
         updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], overload: gvmOverload };
         updatedTableValues[gvmRow] = { ...updatedTableValues[gvmRow], allowance: gvmAllowance };
@@ -522,8 +555,13 @@ export default function Vehicles() {
             }
             
         })
+        if (truckNumber.length<4) {
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Invalid Truck Number', life: 2000 });
+            return;
+        }
+
         if (data.length === 0) {
-            alert('Please enter valid axel weight.');
+            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Please enter valid axel weight.', life: 2000 });
             return;
         }
 
@@ -587,7 +625,7 @@ export default function Vehicles() {
             {isAdding ? (
                 <div className="card shadow-2 p-4">
 
-                    <h2 className="text-2xl font-bold mb-3" style={{ color: '#51baff' }}>Add New Sale</h2>
+                    <h2 className="text-2xl font-bold mb-3" style={{ color: '#51baff' }}>Add New Sale - {parentId}</h2>
 
                     <div className="flex flex-wrap gap-4 mb-3">
                         {/* Vehicle Type Field */}
@@ -607,7 +645,7 @@ export default function Vehicles() {
                                 id="vehicleType"
                                 value={selectedVehicleType}
                                 options={vehicleTypes}
-                                onChange={(e) => handleVehicleTypeChange(e.value)}
+                                onChange={(e) => handleVehicleTypeChangeNew(e.value)}
                                 placeholder="Select vehicle type"
                                 style={{ width: '100%' }}
                             />
@@ -628,7 +666,7 @@ export default function Vehicles() {
                             <label htmlFor="gvmAxelWeight" className="font-semibold">Truck Number</label>
                             <InputText
                                 id="trckNo"
-                                maxLength={7}
+                                maxLength={10}
                                 value={truckNumber}
                                 onChange={(e) => {setTruckNumber( e.target.value.toUpperCase() )}}
                                 placeholder="T000XXX"
@@ -672,7 +710,10 @@ export default function Vehicles() {
                                         placeholder="Select Axel Group"
                                         
                                     />} 
-                                    style={{ width: '20%' }}/>
+                                    style={{ width: '30%' }}/>
+
+
+                                <Column field="description" header="Description" style={{ width: '30%' }} />
 
                                 <Column key={'axelWeight'}
                                     headerStyle={{ textAlign: 'center' }} 
@@ -681,10 +722,11 @@ export default function Vehicles() {
                                     editor={(options) => 
                                         <InputText type="text" value={options.value} onChange={(e) => setWeights(e.target.value,options)} />
                                     } 
-                                    style={{ width: '20%' }}/>
+                                    style={{ width: '10%' }}/>
                                 
-                                <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="weightLimit" header="Weight Limit" style={{ width: '20%' }}/>
-                                <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="status" header="Status" body={statusBodyTemplate} style={{ width: '20%' }}/>
+                                <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="allowed" header="Allowed" style={{ width: '10%' }}/>
+                                <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="weightLimit" header="Weight Limit" style={{ width: '10%' }}/>
+                                <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="status" header="Status" body={statusBodyTemplate} style={{ width: '30%' }}/>
                                 <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="overload" header="OverLoad"  style={{ width: '20%' }}/>
                                 <Column headerStyle={{ textAlign: 'center' }} bodyStyle={{ textAlign: 'center' }} field="allowance" header="Allowance" style={{ width: '20%' }}/>
                                 
@@ -723,7 +765,7 @@ export default function Vehicles() {
                     header={renderHeader()}
                     tableStyle={{ minWidth: '60rem' }}
                     emptyMessage="Loading..."
-                    onRowClick={onRowClick} 
+                    //onRowClick={onRowClick} 
                     rowClassName={rowClassName}
                 >
                     <Column field="createdTime" header="Date" />
@@ -768,6 +810,8 @@ export default function Vehicles() {
 </Dialog>
 
 
+
+<Toast ref={toast} />
 
         </div>
     );
